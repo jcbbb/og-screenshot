@@ -1,19 +1,21 @@
 const { Router } = require('express');
-const { sanitazeUrl, getDimensions } = require('../utils/utils');
+const { parse } = require('url');
+const { sanitazeUrl, getDimensions, getUrlFromPathname } = require('../utils/utils');
 const puppeteer = require('puppeteer');
 
 const router = Router();
 
-const PROTOCOL = 'https://';
 const DEFAULT_WIDTH = 1280;
 const DEFAULT_HEIGHT = 720;
 
-router.get('/:url', async (req, res) => {
+router.get('/*', async (req, res) => {
     const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
 
     try {
-        const { url } = req.params;
-        const { viewport, format, fullpage } = req.query;
+        const { pathname = '/', query = {} } = parse(req.url, true);
+        const url = getUrlFromPathname(pathname);
+        const { viewport, format, fullpage } = query;
+
         const [width, height] = viewport ? getDimensions(viewport) : [DEFAULT_WIDTH, DEFAULT_HEIGHT];
 
         sanitazeUrl(url);
@@ -26,7 +28,7 @@ router.get('/:url', async (req, res) => {
             isMobile: true,
         });
 
-        await page.goto(`${PROTOCOL}${url}`, {
+        await page.goto(url, {
             waitUntil: 'networkidle0',
         });
 

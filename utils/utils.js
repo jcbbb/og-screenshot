@@ -10,7 +10,17 @@ const sanitazeUrl = (dirty) => {
     return dirty.replace(URL_REGEX, '');
 };
 
+const getUrlFromPathname = (path) => {
+    let url = path.slice(1);
+    if (url.startsWith('http') || url.startsWith('https')) {
+        return url;
+    }
+
+    return 'https://' + url;
+};
+
 module.exports = {
     getDimensions,
     sanitazeUrl,
+    getUrlFromPathname,
 };
